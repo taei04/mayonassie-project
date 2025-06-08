@@ -45,7 +45,7 @@ def register():
     conn = sqlite3.connect("emotion.db")
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO users (userid, password, phone) VALUES (?, ?, ?)",
+        cursor.execute("INSERT INTO users (userid, password, phone, coins) VALUES (?, ?, ?, 3)",
                        (userid, password, phone))
         conn.commit()
     except sqlite3.IntegrityError:
