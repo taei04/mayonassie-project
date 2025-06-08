@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>마요네즈 회원가입</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #fff8e1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    h1 {
+      color: #ffb300;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .form-box {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 300px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #ffcc80;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      color: white;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    button:hover {
+      background-color: #ffa726;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.9rem;
+      color: #999;
+    }
+
+    /* 개인정보 동의서 css */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      padding-top: 80px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 30px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 10px;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content p {
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .checkbox {
+      margin: 15px 0;
+    }
+
+    .checkbox label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+
+    .checkbox input[type="checkbox"] {
+      margin: 0;
+      padding: 0;
+      width: 16px;
+      height: 16px;
+    }
+
+    .checkbox span {
+      margin-left: 5px;
+    }
+
+
+    .modal-buttons {
+      text-align: right;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    .btn-agree {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-cancel {
+      background-color: #ccc;
+    }
+
+    .back-circle {
+      position: absolute;
+      top: 255px;         /* 박스 기준으로 약간 위 */
+      left: calc(50% - 115px);  /* 박스의 왼쪽 상단 바깥쪽으로 맞춤 (가로 300px이므로 절반-150px) */
+      transform: translateX(-60px);  /* 살짝 더 왼쪽으로 */
+      background-color: #ffcc80;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s;
+      text-decoration: none;
+    }
+
+    .back-circle:hover {
+      background-color: #ffa726;
+    }
+  </style>
+</head>
+<body>
+  <h1>회원가입</h1>
+  <div class="form-box">
+    <a href="/" class="back-circle">←</a>
+    <form method="POST" action="/register" id="registerForm">
+      <label><strong>닉네임 (자동 생성)</strong></label>
+      <input type="text" name="userid" id="userid" readonly />
+
+      <input type="password" name="password" placeholder="비밀번호를 설정해주세요" required />
+
+      <input type="text" name="phone" placeholder="전화번호를 입력해주세요" required />
+
+      <!-- 🔽 type="submit" 대신 type="button"으로 바꾸고 클릭 시 handleConsent() 실행 -->
+      <button type="button" onclick="handleConsent()">회원가입 완료</button>
+    </form>
+
+    <!-- <a href="/home">
+      <button style="margin-top: 10px">뒤로가기</button>
+    </a> -->
+
+  </div>
+
+
+    <div class="footer">
+      010@naver.com - 문제 있을 시 메일 남겨주세요!
+    </div>
+
+    <!-- 개인정보 수집 동의서 모달 -->
+  <div id="consentModal" class="modal">
+    <div class="modal-content">
+      <h2>📄 개인정보 수집·이용 동의서</h2>
+      <p><strong>1. 수집 항목</strong>: 전화번호, 아이디, 비밀번호, 설문 응답, AI 대화 기록(일기 포함)</p>
+      <p><strong>2. 이용 목적</strong>: 본인 확인, 감정 분석, 일기 제공, 연구 목적의 통계 분석</p>
+      <p><strong>3. 보유 기간</strong>: 회원 탈퇴 시까지. 관련 법령에 따른 보관 예외 존재</p>
+      <p><strong>4. 제3자 제공</strong>: 연구기관에 <b>익명화된 설문 데이터만 제공</b>, 식별 정보는 외부 제공 없음</p>
+      <p style="font-size: 13px;">*동의 거부 권리: 동의하지 않을 경우 서비스 이용이 제한될 수 있음</p>
+
+      <div class="checkbox">
+        <label for="agreeCheckbox">
+          <input type="checkbox" id="agreeCheckbox" />
+          <span>위 내용을 모두 읽고 동의합니다.</span>
+        </label>
+      </div>
+
+
+      <div class="modal-buttons">
+        <button class="btn btn-cancel" onclick="closeModal()">취소</button>
+        <button class="btn btn-agree" onclick="submitForm()">동의함</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const words = ["푸른별", "햇살", "달빛", "바람결", "나뭇잎", "봄꽃", "겨울눈", "파란하늘",
+                   "노란고양이", "초코쿠키", "포근담요", "반짝별", "따뜻햇살", "솜사탕", "비오는날", "새벽공기"];
+
+    function generateRandomKoreanId() {
+      const word = words[Math.floor(Math.random() * words.length)];
+      const number = Math.floor(Math.random() * 1000);
+      return word + number;
+    }
+
+    const newId = generateRandomKoreanId();
+    document.getElementById("userid").value = newId;
+
+    let isConsentShown = false;
+
+    function handleConsent() {
+      if (!isConsentShown) {
+        document.getElementById('consentModal').style.display = 'block';
+        isConsentShown = true;
+      } else {
+        submitForm(); // 이미 동의한 경우
+      }
+    }
+
+    function submitForm() {
+      const checkbox = document.getElementById('agreeCheckbox');
+      if (!checkbox.checked) {
+        alert("동의함에 체크해 주세요.");
+        return;
+      }
+      document.getElementById('registerForm').submit();
+    }
+
+
+    function closeModal() {
+      document.getElementById('consentModal').style.display = 'none';
+      isConsentShown = false;
+    }
+
+    function submitForm() {
+      const checkbox = document.getElementById('agreeCheckbox');
+      if (!checkbox.checked) {
+        alert("동의함에 체크해 주세요.");
+        return;
+      }
+      document.getElementById('registerForm').submit();
+    }
+  </script>
+
+{% if signup_failed is defined and signup_failed == true %}
+  <script>
+    alert("❌ 이미 존재하는 아이디 또는 전화번호입니다.");
+  </script>
+{% endif %}
+
+{% if signup_success is defined and signup_success == true %}
+  <script>
+    alert("✅ 회원가입이 완료되었습니다! 로그인해주세요.");
+  </script>
+{% endif %}
+  
+</body>
+</html>

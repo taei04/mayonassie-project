@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>마요네즈 감정 설문조사</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/survey-core/defaultV2.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://unpkg.com/survey-jquery@1.9.100/survey.jquery.min.js"></script>
+   <style>
+    :root {
+      --primary: #ff9800;
+      --secondary: #ffcc80;
+      --bg-gradient-start: #fffaf0;
+      --bg-gradient-end: #fff8e1;
+      --text-color: #333;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      font-family: 'Gowun Dodum', sans-serif;
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px;
+    }
+
+    .back-circle {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--primary);
+      color: #fff;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: background 0.3s ease;
+    }
+    .back-circle:hover {
+      background: var(--secondary);
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 2.2rem;
+      color: var(--primary);
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    #surveyContainer {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 40px 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    /* SurveyJS 기본 UI 제거 */
+    button.sv_q_clear_btn,
+    button.sv_q_comment_btn_clear,
+    .sv_q_actions,
+    .sv_q_action_bar,
+    .sv_q_action {
+      display: none !important;
+    }
+
+    button.sv_q_clear_btn {
+      display: none !important;
+    }
+
+    .sv_q_clear_btn,
+    .sv_q_comment_btn_clear,
+    .sv_q_dropdown__clear-button,
+    .sv-action-bar,
+    .sv-footer__menu {
+      display: none !important;
+    }
+
+
+    /* 질문 제목 강조 */
+    .sv_q_title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .sv_q_title + .sv_q_description {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    /* 라디오 그룹 spacing */
+    .sv_q_radiogroup {
+      margin-bottom: 2rem;
+    }
+    .sv_q_radiogroup .sv-item label {
+      padding: 10px 14px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .sv_q_radiogroup .sv-item input:checked + label {
+      background: var(--secondary);
+      color: #333;
+      font-weight: 500;
+    }
+
+    /* 페이지 네비게이션 버튼 */
+    .sv-footer {
+      width: 100%;
+      text-align: right;
+      margin-top: 20px;
+    }
+
+    button[data-role="prev"],
+    
+    button[data-role="next"] {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: background 0.3s ease;
+      margin-left: 8px;
+    }
+    button[data-role="prev"] {
+      background: #ccc;
+      color: var(--text-color);
+    }
+
+    button[data-role="prev"] { float: left !important; }
+    button[data-role="next"] { float: right !important; }
+
+
+    button[data-role="prev"]:hover {
+      background: #bbb;
+    }
+    button[data-role="next"]:hover {
+      background: var(--secondary);
+    }
+
+    #completeMessage {
+      display: none;
+      text-align: center;
+    }
+    #completeMessage h3 {
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+    #resultBtn {
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    #resultBtn:hover {
+      background: var(--secondary);
+    }
+
+    /* SurveyJS 기본 버튼 스타일 커스터마이징 */
+    input[type="button"], .sv-footer input[type="button"], .sv-footer button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-family: 'Gowun Dodum', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s ease;
+    }
+
+    input[type="button"]:hover, .sv-footer input[type="button"]:hover, .sv-footer button:hover {
+      background-color: var(--secondary);
+    }
+
+    
+  </style>
+</head>
+<body>
+  <a href="/home" class="back-circle">←</a>
+  <h2>당신의 감정을 공유해주세요 😊</h2>
+  <div id="surveyContainer"></div>
+
+  <button id="skipBtn" style="display:none; margin: 20px; padding: 12px 24px; border-radius: 30px; background-color: #ccc; color: #333; border: none; cursor: pointer;">
+  건너뛰기</button>
+
+  <div id="completeMessage">
+    <h3>설문이 완료되었습니다! 💛</h3>
+    <button id="resultBtn">결과 보러가기</button>
+  </div>
+
+  <script>
+    Survey.StylesManager.applyTheme("defaultV2");
+    Survey.Serializer.findProperty("radiogroup", "showClearButton").defaultValue = false;
+
+    const surveyJson = {
+      title: { ko: "마요네즈 감정 설문조사" },
+      headerView: "advanced",
+      showQuestionNumbers: "off",
+      pages: [
+        // 1. 어떤 감정을 느끼셨나요?#####################################################여기야!!!!!!!
+        {
+          name: "page1",
+          title: "요즘 마음에 가장 자주 머무는 감정은 무엇인가요?",
+          description: "최근 3개월 동안 아래와 같은 마음이 스쳐간 적이 있다면, '네'를 선택해주세요. 괜찮아요, 솔직해도 돼요.",
+          elements: [
+            {
+              type: "radiogroup",
+              name: "분노",
+              title: "누군가의 말이나 행동에 마음이 부풀어 오르고, 참기 어려운 순간이 있었나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "우울",
+              title: "하루가 지나도 마음이 나아지지 않았던 적이 있나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "불안",
+              title: "작은 일에도 마음이 조마조마하거나 긴장된 느낌이 들었던 적이 있나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "외로움",
+              title: "사람들 속에 있어도 마음 한켠이 텅 빈 듯한 느낌이 든 적이 있었나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "무기력",
+              title: "해야 할 일이 있어도 손이 가지 않았던 날이 있었나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "슬픔",
+              title: "괜찮은 척했지만, 혼자 있을 때 문득 눈물이 차올랐던 적이 있나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "기쁨",
+              title: "요즘, 나도 모르게 웃음이 터지는 순간들이 있진 않았나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "행복",
+              title: "“지금 이 순간 참 좋다”는 생각이 들었던 적이 있었나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "평온",
+              title: "마음이 고요하게 가라앉고, 나 자신과 조화를 이루는 순간이 있었나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            },
+            {
+              type: "radiogroup",
+              name: "만족감",
+              title: "나를 향해 ‘잘했어’라고 말해주고 싶은 순간이 있었나요?",
+              isRequired: true,
+              showClearButton : false,
+              colCount: 2,
+              choices: [
+                { value: "true", text: "네" },
+                { value: "false", text: "아니요" }
+              ]
+            }
+          ]
+        },
+       // ####################################################
+
+        // 2. 부정 감정 설문
+        {
+          name: "page2",
+          title: "부정 감정 설문",
+          description: "선택하신 부정 감정에 대해 답해주세요.",
+          elements: [
+            // 분노 질문 3개
+            {
+              type: "panel",
+              title: "😡",
+              visibleIf: "{분노} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "anger1",
+                  title: "말이 막혔을 때, “내 말은 왜 안 통하지?” 라는 생각이 든 적이 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😤" },
+                    { value:3, text:"😠" },
+                    { value:4, text:"😡" },
+                    { value:5, text:"🔥" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "anger2",
+                  title: "억울한 말을 들었지만 아무 말도 못 하고 속만 상했던 기억이 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😤" },
+                    { value:3, text:"😠" },
+                    { value:4, text:"😡" },
+                    { value:5, text:"🔥" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "anger3",
+                  title: "상대방이 날 무시한다고 느껴져서 화가 치밀었던 순간이 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😤" },
+                    { value:3, text:"😠" },
+                    { value:4, text:"😡" },
+                    { value:5, text:"🔥" }
+                  ]
+                }
+              ]
+            },
+            // 우울 질문 3개
+            {
+              type: "panel",
+              title: "🌧",
+              visibleIf: "{우울} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "depress1",
+                  title: "특별한 이유 없이 기운이 빠지고 무기력했던 날이 있었다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"🙁" },
+                    { value:3, text:"😞" },
+                    { value:4, text:"😩" },
+                    { value:5, text:"😭" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "depress2",
+                  title: "평소 좋아하던 것에도 흥미가 잘 생기지 않았다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"🙁" },
+                    { value:3, text:"😞" },
+                    { value:4, text:"😩" },
+                    { value:5, text:"😭" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "depress3",
+                  title: "사람들 앞에서는 밝은 모습으로 웃지만 집에 혼자 있을 때는 우울한 기분이다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"🙁" },
+                    { value:3, text:"😞" },
+                    { value:4, text:"😩" },
+                    { value:5, text:"😭" }
+                  ]
+                }
+              ]
+            },
+            // 불안 질문 3개
+            {
+              type: "panel",
+              title: "😬",
+              visibleIf: "{불안} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "anxiety1",
+                  title: "주변 사람들이 나를 어떻게 볼지 신경 쓰이다 보면 긴장된다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😬" },
+                    { value:3, text:"😟" },
+                    { value:4, text:"😰" },
+                    { value:5, text:"😱" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "anxiety2",
+                  title: "잘하고 있어도 “혹시 부족하지 않을까?” 걱정이 든다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😬" },
+                    { value:3, text:"😟" },
+                    { value:4, text:"😰" },
+                    { value:5, text:"😱" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "anxiety3",
+                  title: "자려고 누웠을 때, 하루가 떠오르며 불안이 몰려올 때가 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😬" },
+                    { value:3, text:"😟" },
+                    { value:4, text:"😰" },
+                    { value:5, text:"😱" }
+                  ]
+                }
+              ]
+            },
+            // 외로움 질문 3개
+            {
+              type: "panel",
+              title: "🥺",
+              visibleIf: "{외로움} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "lonely1",
+                  title: "“나만 빼고 모두 행복한 것 같아” 라는 생각이 들 때가 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"🥺" },
+                    { value:3, text:"😢" },
+                    { value:4, text:"😔" },
+                    { value:5, text:"😭" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "lonely2",
+                  title: "함께 있어도 마음속엔 텅 빈 느낌이 들 때가 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"🥺" },
+                    { value:3, text:"😢" },
+                    { value:4, text:"😔" },
+                    { value:5, text:"😭" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "lonely3",
+                  title: "힘들다고 털어놓을 사람이 생각나지 않아 더 외로웠던 순간이 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"🥺" },
+                    { value:3, text:"😢" },
+                    { value:4, text:"😔" },
+                    { value:5, text:"😭" }
+                  ]
+                }
+              ]
+            },
+            // 무기력 질문 3개
+            {
+              type: "panel",
+              title: "😓",
+              visibleIf: "{무기력} = true",
+              elements: [
+                {
+                  type: "rating", name: "fatigue1",
+                  title: "자고 일어나도 피로가 풀리지 않고, 하루가 무겁게 시작된 날이 있었다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😓" },
+                    { value:3, text:"😫" },
+                    { value:4, text:"😵" },
+                    { value:5, text:"💤" }
+                  ]
+                },
+                {
+                  type: "rating", name: "fatigue2",
+                  title: "주변 사람들이 열심히 살아가는 모습이 부럽고 멀게 느껴졌다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😓" },
+                    { value:3, text:"😫" },
+                    { value:4, text:"😵" },
+                    { value:5, text:"💤" }
+                  ]
+                },
+                {
+                  type: "rating", name: "fatigue3",
+                  title: "뭘 해도 소용없다는 생각이 들며 의욕이 사라졌던 적이 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😓" },
+                    { value:3, text:"😫" },
+                    { value:4, text:"😵" },
+                    { value:5, text:"💤" }
+                  ]
+                }
+              ]
+            },
+            // 슬픔 질문 3개
+            {
+              type: "panel",
+              title: "😢",
+              visibleIf: "{슬픔} = true",
+              elements: [
+                {
+                  type: "rating", name: "sad1",
+                  title: "아무 말 없이도 눈물이 날 것 같은 순간이 있었다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😢" },
+                    { value:3, text:"😿" },
+                    { value:4, text:"😭" },
+                    { value:5, text:"🖤" }
+                  ]
+                },
+                {
+                  type: "rating", name: "sad2",
+                  title: "울고 나서도 마음이 나아지지 않았던 날이 있었다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😢" },
+                    { value:3, text:"😿" },
+                    { value:4, text:"😭" },
+                    { value:5, text:"🖤" }
+                  ]
+                },
+                {
+                  type: "rating", name: "sad3",
+                  title: "어떤 감정인지 설명도 잘 안 되는데, 마음이 자꾸 무너졌다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value:1, text:"😐" },
+                    { value:2, text:"😢" },
+                    { value:3, text:"😿" },
+                    { value:4, text:"😭" },
+                    { value:5, text:"🖤" }
+                  ]
+                }
+              ]
+            },
+            // 부정 감정 주관식 질문 3개
+            {
+              type: "panel",
+              name: "negShare",
+              title: "답변 부탁해요",
+              elements: [
+                {
+                  type: "comment",
+                  name: "share1",
+                  title: "1. 최근 가장 마음이 힘들었던 순간은 언제였나요?",
+                  placeHolder: "예: \"혼자 집에 있을 때 눈물이 났어요.\""
+                },
+                {
+                  type: "comment",
+                  name: "share2",
+                  title: "2. 누군가에게 말하지 못한 감정이 있다면, 지금 이 자리에서 표현해볼 수 있을까요?",
+                  placeHolder: "예: \"사실은 그 말이 많이 아팠어요.\""
+                },
+                {
+                  type: "comment",
+                  name: "share3",
+                  title: "3. 지금 나를 가장 지치게 하는 것이 있다면 무엇인가요?",
+                  placeHolder: "예: \"계속 잘해야 한다는 압박감이요.\""
+                }
+              ]
+            }
+          ]
+        },
+
+        // Page 3: 긍정 감정 설문
+
+        {
+          name: "page3",
+          title: "긍정 감정 설문",
+          description: "선택하신 긍정 감정에 대해 답해주세요.",
+          elements: [
+            // 😊 기쁨
+            {
+              type: "panel",
+              title: "😊",
+              visibleIf: "{기쁨} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "joy1",
+                  title: "나는 요즘 웃는 시간이 많다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "🙂" },
+                    { value: 2, text: "😀" },
+                    { value: 3, text: "😄" },
+                    { value: 4, text: "🤩" },
+                    { value: 5, text: "🥳" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "joy2",
+                  title: "주변 사람들과의 대화에서 즐거움을 자주 느낀다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "🙂" },
+                    { value: 2, text: "😀" },
+                    { value: 3, text: "😄" },
+                    { value: 4, text: "🤩" },
+                    { value: 5, text: "🥳" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "joy3",
+                  title: "하루 중 ‘행복하다’고 느끼는 순간이 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "🙂" },
+                    { value: 2, text: "😀" },
+                    { value: 3, text: "😄" },
+                    { value: 4, text: "🤩" },
+                    { value: 5, text: "🥳" }
+                  ]
+                }
+              ]
+            },
+            // 💛 행복
+            {
+              type: "panel",
+              title: "💛",
+              visibleIf: "{행복} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "happy1",
+                  title: "나는 지금 내 삶에 만족하고 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "🙂" },
+                    { value: 2, text: "😊" },
+                    { value: 3, text: "😌" },
+                    { value: 4, text: "😍" },
+                    { value: 5, text: "🥰" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "happy2",
+                  title: "내 감정과 생각이 조화를 이루고 있다고 느낀다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "🙂" },
+                    { value: 2, text: "😊" },
+                    { value: 3, text: "😌" },
+                    { value: 4, text: "😍" },
+                    { value: 5, text: "🥰" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "happy3",
+                  title: "나는 나 자신이 충분히 괜찮은 사람이라고 생각한다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "🙂" },
+                    { value: 2, text: "😊" },
+                    { value: 3, text: "😌" },
+                    { value: 4, text: "😍" },
+                    { value: 5, text: "🥰" }
+                  ]
+                }
+              ]
+            },
+            // 😌 평온
+            {
+              type: "panel",
+              title: "😌",
+              visibleIf: "{평온} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "calm1",
+                  title: "나는 마음이 편안한 시간을 갖고 있다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "😐" },
+                    { value: 2, text: "😌" },
+                    { value: 3, text: "😇" },
+                    { value: 4, text: "🧘" },
+                    { value: 5, text: "🌈" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "calm2",
+                  title: "스트레스 상황에서도 차분하게 대처하려고 한다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "😐" },
+                    { value: 2, text: "😌" },
+                    { value: 3, text: "😇" },
+                    { value: 4, text: "🧘" },
+                    { value: 5, text: "🌈" }
+                  ]
+                },
+                {
+                  type: "comment",
+                  name: "calm3",
+                  title: "나에게 ‘평온’이란 어떤 상태인지 적어주세요.",
+                  placeHolder: "예: 마음이 조용하고 숨 쉬는 게 편할 때요."
+                }
+              ]
+            },
+            // 🧘 만족감
+            {
+              type: "panel",
+              title: "🧘",
+              visibleIf: "{만족감} = true",
+              elements: [
+                {
+                  type: "rating",
+                  name: "satisfy1",
+                  title: "나는 내가 해낸 일에 대해 만족감을 자주 느낀다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "😐" },
+                    { value: 2, text: "🙂" },
+                    { value: 3, text: "😌" },
+                    { value: 4, text: "😎" },
+                    { value: 5, text: "👏" }
+                  ]
+                },
+                {
+                  type: "rating",
+                  name: "satisfy2",
+                  title: "계획한 일들을 실행했을 때 뿌듯함을 느낀다.",
+                  isRequired: true,
+                  showClearButton : false,
+                  rateValues: [
+                    { value: 1, text: "😐" },
+                    { value: 2, text: "🙂" },
+                    { value: 3, text: "😌" },
+                    { value: 4, text: "😎" },
+                    { value: 5, text: "👏" }
+                  ]
+                },
+                {
+                  type: "comment",
+                  name: "satisfy3",
+                  title: "최근 ‘잘했다, 괜찮았다’고 느꼈던 순간이 있다면요?",
+                  placeHolder: "예: 힘든 하루를 버텨낸 저 자신에게 칭찬했어요."
+                }
+              ]
+            },
+            // ✍️ 긍정 감정 주관식 질문
+            {
+              type: "panel",
+              name: "positiveShare",
+              title: "답변 부탁해요",
+              elements: [
+                {
+                  type: "comment",
+                  name: "posShare1",
+                  title: "1. 최근 웃음이 났던 순간이 있다면 적어주세요.",
+                  placeHolder: "예: 친구랑 카페에서 수다 떨다 빵 터졌어요."
+                },
+                {
+                  type: "comment",
+                  name: "posShare2",
+                  title: "2. 당신에게 평온을 주는 공간이나 순간이 있다면 무엇인가요?",
+                  placeHolder: "예: 햇살 드는 창가에서 조용히 앉아 있을 때요."
+                },
+                {
+                  type: "comment",
+                  name: "posShare3",
+                  title: "3. 요즘 내가 잘하고 있다고 느낀 순간은 언제인가요?",
+                  placeHolder: "예: 일기를 빠짐없이 쓰고 있다는 점이 자랑스러워요."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    const survey = new Survey.Model(surveyJson);
+    survey.showQuestionNumbers = "off";
+    survey.showNavigationButtons = true;
+    survey.showCompletedPage = false;
+    survey.showProgressBar = "none";
+
+    survey.showClearButton = false;  // Clear 버튼 비활성화
+
+    $("#surveyContainer").Survey({
+      model: survey,
+      onComplete: function (result) {
+        // 설문 완료 후 처리
+        console.log("설문 결과:", result.data);
+        document.getElementById("surveyContainer").style.display = "none";
+        document.getElementById("completeMessage").style.display = "block";
+        document.getElementById("skipBtn").style.display = "none";
+        
+        fetch("/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(result.data)
+        })
+        .then(res => res.json())
+        .then(data => console.log("서버 응답:", data))
+        .catch(err => console.error("서버 전송 오류:", err));
+      }
+    });
+
+    document.getElementById("resultBtn").onclick = function () {
+      alert("결과 페이지로 이동합니다!");
+      window.location.href = "/result";
+    };
+
+    survey.showClearButton = false;
+
+    survey.onCurrentPageChanged.add(function (sender, options) {
+      const skipBtn = document.getElementById("skipBtn");
+      const currentPageIndex = sender.currentPageNo;
+
+      // page2 또는 page3일 때만 skip 버튼 보이기
+      if (currentPageIndex === 1 || currentPageIndex === 2) {
+        skipBtn.style.display = "inline-block";
+      } else {
+        skipBtn.style.display = "none";
+      }
+    });
+
+    // skip 버튼 누르면 다음 페이지로 넘어가기
+    document.getElementById("skipBtn").onclick = function () {
+      const currentPage = survey.currentPage;
+      currentPage.questions.forEach(q => q.isRequired = false); // 현재 페이지의 모든 필수 항목 해제
+      survey.nextPage(); // 이제 페이지 이동 가능
+    };
+
+
+
+  </script>
+</body>
+</html>

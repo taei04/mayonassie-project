@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>나의 감성 일기</title>
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet" /> -->
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Gowun Dodum', sans-serif;
+      background-color: #fffef8;
+    }
+
+    /* 전체 페이지  */
+    .container {
+      display: flex;
+      height: 100vh;
+      position: relative; 
+    }
+
+    /* 왼쪽: 일기 목록 */
+    .sidebar {
+      width: 300px;
+      background-color: #e3f2fd;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+      overflow-y: auto;
+      padding-top: 60px;
+    }
+
+    .sidebar h2 {
+      font-size: 20px;
+      color: #1565c0;
+      margin-bottom: 10px;
+    }
+
+    /* 일기 리스트 */
+    .diary-item {
+      background-color: #ffffff;
+      border-left: 5px solid #90caf9;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .diary-item:hover {
+      background-color: #f0faff;
+    }
+
+    /* 오른쪽: 일기 작성 */
+    .main {
+      flex: 1;
+      padding: 40px;
+    }
+
+    /* 일기 쓰기 제목목 */
+    .main h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #0d47a1;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    textarea {
+      height: 300px;
+      resize: vertical;
+    }
+
+    /* 저장, 삭제 버튼 */
+    button {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: 'Gowun Dodum', sans-serif;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    #charCount {
+      text-align: right;
+      font-size: 14px;
+      color: #888;
+      margin-top: 5px;
+    }
+
+
+    /* 뒤로가기 버튼튼 */
+    .back-circle {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #7cc3fc;
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: background 0.3s ease;
+    }
+
+    .back-circle:hover {
+      background: #64b5f6;
+    }
+
+    .sidebar{
+      padding-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 📌 숨겨진 input 반드시 포함! -->
+  <input type="hidden" id="selectedDiaryId" />
+
+  <script>
+    function saveDiary() {
+      const content = document.getElementById("diaryContent").value;
+
+      if (!content.trim()) {
+        alert("내용을 입력해주세요.");
+        return;
+      }
+
+      fetch("/diary/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: content })  // 날짜/시간은 서버에서 자동 처리
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message || "저장되었습니다!");
+          document.getElementById("diaryContent").value = "";
+          document.getElementById("selectedDiaryId").value = "";
+          loadDiaryList();
+        });
+    }
+
+    function deleteDiary() {
+      const id = document.getElementById("selectedDiaryId").value;
+      console.log("삭제 요청 ID:", id); // ✅ 확인용
+
+      if (!id) {
+        alert("삭제할 일기를 선택해주세요.");
+        return;
+      }
+
+      fetch("/diary/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id })
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message || "삭제되었습니다!");
+          document.getElementById("diaryContent").value = "";
+          document.getElementById("selectedDiaryId").value = "";
+          loadDiaryList();
+        });
+    }
+
+    function loadDiaryList() {
+      fetch("/diary/list")
+        .then(res => res.json())
+        .then(data => {
+          const sidebar = document.querySelector(".sidebar");
+          sidebar.innerHTML = "<h2>📓 나의 일기</h2>";
+
+          data.forEach(d => {
+            const div = document.createElement("div");
+            div.className = "diary-item";
+            div.textContent = `${d.date} ${d.time} - ${d.content.slice(0, 20)}...`;
+
+            // 🧠 클릭 시 ID를 hidden input에 저장!
+            div.onclick = () => {
+              document.getElementById("date").value = d.date;
+              document.getElementById("diaryContent").value = d.content;
+              document.getElementById("selectedDiaryId").value = d.id;
+              console.log("✅ 선택된 ID:", d.id);  // 🔍 확인용
+            };
+
+            sidebar.appendChild(div);
+          });
+        });
+    }
+
+    function checkAutoDiary() {
+      alert("오늘 어떤 일이 있었어요?\n설문을 먼저 하고 AI와 대화해주세요!");
+      window.location.href = "/survey";  // 또는 원한다면 /chat 으로 보내도 됨
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadDiaryList();
+    });
+  </script>
+
+
+  <div class="container">
+    <!-- 왼쪽: 일기 목록 -->
+    <a href="/home" class="back-circle">←</a>
+    <div class="sidebar">
+      <div style="margin-top: 100px;"><h2>📓 나의 일기</h2></div>
+      <div class="diary-item">2025-05-17 - 햇살이 따뜻했던 날</div>
+      <div class="diary-item">2025-05-16 - 마음이 복잡했지만 괜찮았어</div>
+      <div class="diary-item">2025-05-15 - 새로운 아이디어가 떠올랐다</div>
+    </div>
+
+    <!-- 오른쪽: 일기 작성 -->
+    <div class="main">
+      <h2>🖋 일기 쓰기</h2>
+      <div class="form-group">
+        <label for="date">날짜</label>
+        <input type="date" id="date" />
+      </div>
+      <div class="form-group">
+        <label for="diaryContent">내용</label>
+        <textarea id="diaryContent" placeholder="하루를 돌아보며 느낀 점을 적어보세요..."></textarea>
+        <div id="charCount">0 / 1000자</div>
+      </div>
+      <button onclick="saveDiary()">일기 저장하기</button>
+      <button onclick="checkAutoDiary()">자동 일기 쓰러 가기</button>
+      <a href="/home">
+        <button onclick="deleteDiary()">일기 삭제하기</button>
+      </div>
+  </div>
+
+  <script>
+    // 글자 수 제한 및 실시간 표시 (1000자)
+    const diaryContent = document.getElementById('diaryContent');
+    const charCount = document.getElementById('charCount');
+
+    diaryContent.addEventListener('input', () => {
+      const length = diaryContent.value.length;
+      charCount.textContent = `${length} / 1000자`;
+
+      if (length > 1000) {
+        diaryContent.value = diaryContent.value.substring(0, 1000);
+        charCount.textContent = `1000 / 1000자`;
+      }
+    });
+  </script>
+</body>
+</html>
